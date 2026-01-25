@@ -4,9 +4,8 @@ const db = require('../models');
 const { User } = db;
 
 const JWT_SECRET = process.env.JWT_SECRET;
-const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || 'your-refresh-secret-key-change-in-production';
+const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
 
-// Generate tokens
 const generateTokens = (user) => {
   const accessToken = jwt.sign(
     { userId: user.id, email: user.email },
@@ -45,7 +44,6 @@ class AuthController {
       const user = await User.create({ email, password });
       const { accessToken, refreshToken } = generateTokens(user);
       
-      // Save refresh token to database
       user.refreshToken = refreshToken;
       await user.save();
 
@@ -82,7 +80,6 @@ class AuthController {
 
       const { accessToken, refreshToken } = generateTokens(user);
       
-      // Save refresh token to database
       user.refreshToken = refreshToken;
       await user.save();
 
@@ -115,7 +112,6 @@ class AuthController {
 
       const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
       
-      // Update refresh token in database
       user.refreshToken = newRefreshToken;
       await user.save();
 
