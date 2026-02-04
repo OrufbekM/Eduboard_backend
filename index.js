@@ -27,7 +27,9 @@ app.get('/', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 
-db.sequelize.sync({ alter: false }).then(() => {
+const shouldAlter = process.env.DB_SYNC_ALTER === 'true';
+
+db.sequelize.sync({ alter: shouldAlter }).then(() => {
   console.log('Database synchronized successfully');
   app.listen(PORT, () => {
     console.log(`Server is running on port http://localhost:${PORT}`);

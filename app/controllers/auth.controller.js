@@ -127,7 +127,7 @@ class AuthController {
 
   static async logout(req, res) {
     try {
-      const userId = req.userId;
+      const userId = req.user?.id || req.userId;
       
       const user = await User.findByPk(userId);
       if (user) {
@@ -144,8 +144,9 @@ class AuthController {
 
   static async getProfile(req, res) {
     try {
-      const user = await User.findByPk(req.userId, {
-        attributes: ['id', 'email']
+      const userId = req.user?.id || req.userId;
+      const user = await User.findByPk(userId, {
+        attributes: ['id', 'email', 'username', 'fullName', 'phoneNumber']
       });
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
@@ -154,6 +155,74 @@ class AuthController {
       res.json({ user });
     } catch (error) {
       console.error('Get profile error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
+  static async updateProfile(req, res) {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+
+      const userId = req.user?.id || req.userId;
+      const user = await User.findByPk(userId, {
+        attributes: ['id', 'email', 'username', 'fullName', 'phoneNumber']
+      });
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      const { username, fullName, phoneNumber } = req.body || {};
+      const normalizedUsername = username === '' ? null : username;
+      const normalizedFullName = fullName === '' ? null : fullName;
+      const normalizedPhoneNumber = phoneNumber === '' ? null : phoneNumber;
+
+      if (username !== undefined) user.username = normalizedUsername;
+      if (fullName !== undefined) user.fullName = normalizedFullName;
+      if (phoneNumber !== undefined) user.phoneNumber = normalizedPhoneNumber;
+
+      await user.save();
+
+      res.json({ user });
+    } catch (error) {
+      console.error('Update profile error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
+  static async resetPassword(req, res) {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+
+      const userId = req.user?.id || req.userId;
+      const user = await User.findByPk(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      const { currentPassword, newPassword, confirmPassword } = req.body;
+
+      if (newPassword !== confirmPassword) {
+        return res.status(400).json({ message: 'New password and confirm password do not match' });
+      }
+
+      const isValidPassword = await user.validatePassword(currentPassword);
+      if (!isValidPassword) {
+        return res.status(401).json({ message: 'Current password is incorrect' });
+      }
+
+      user.password = newPassword;
+      user.refreshToken = null;
+      await user.save();
+
+      res.json({ message: 'Password reset successfully' });
+    } catch (error) {
+      console.error('Reset password error:', error);
       res.status(500).json({ message: 'Internal server error' });
     }
   }

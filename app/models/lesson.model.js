@@ -61,6 +61,10 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'classId',
       as: 'class'
     });
+    Lesson.hasMany(models.LessonMedia, {
+      foreignKey: 'lessonId',
+      as: 'media'
+    });
   };
 
   return Lesson;

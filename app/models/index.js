@@ -3,6 +3,7 @@ const User = require("./user.model")(sequelize, require("sequelize").DataTypes);
 const ClassCategory = require("./classCategory.model")(sequelize, require("sequelize").DataTypes);
 const Class = require("./class.model")(sequelize, require("sequelize").DataTypes);
 const Lesson = require("./lesson.model")(sequelize, require("sequelize").DataTypes);
+const LessonMedia = require("./lessonMedia.model")(sequelize, require("sequelize").DataTypes);
 
 const db = {};
 db.sequelize = sequelize;
@@ -12,6 +13,7 @@ db.User = User;
 db.ClassCategory = ClassCategory;
 db.Class = Class;
 db.Lesson = Lesson;
+db.LessonMedia = LessonMedia;
 
 // Setup associations
 Object.keys(db).forEach(modelName => {
